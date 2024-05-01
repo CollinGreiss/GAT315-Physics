@@ -17,13 +17,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\body.h">
+    <ClInclude Include="src\world.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\mathf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\world.h">
+    <ClInclude Include="src\body.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

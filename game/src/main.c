@@ -54,8 +54,6 @@ int main( void ) {
 
 	CloseWindow();
 
-	free( bodies );
-
 	return 0;
 
 }
