@@ -7,24 +7,87 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{E9C7FDCE-D52A-8D73-7EB0-C5296AF258F6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Physics">
+      <UniqueIdentifier>{aa564a39-17d6-4f83-8685-ef8d3d40dc2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics">
+      <UniqueIdentifier>{818a5465-1148-42fe-90ac-013fa36f026e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Simulation">
+      <UniqueIdentifier>{8133da2b-d170-4b6b-b581-05412ec34154}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Graphics">
+      <UniqueIdentifier>{4fa48cb3-e09d-474f-ab10-aa7540946a4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Physics">
+      <UniqueIdentifier>{2c2eab99-1beb-48cd-90a8-a1a244745465}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Simulation">
+      <UniqueIdentifier>{fcfc4766-18fb-46bc-a333-01e523b6af63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Math">
+      <UniqueIdentifier>{a45b2822-b668-4af0-87ce-ac2e96979724}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\body.c">
+      <Filter>Source Files\Simulation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\contact.c">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\editor.c">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\force.c">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render.c">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\spring.c">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
     <ClCompile Include="src\world.c">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Simulation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\collision.c">
+      <Filter>Source Files\Physics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\world.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\mathf.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Simulation</Filter>
     </ClInclude>
     <ClInclude Include="src\body.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\contact.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\force.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\spring.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\render.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\intergrator.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mathf.h">
+      <Filter>Header Files\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\editor.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\collision.h">
+      <Filter>Header Files\Physics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

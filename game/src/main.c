@@ -1,56 +1,130 @@
+#include "world.h"
 #include "body.h"
+
+#include "editor.h"
+#include "render.h"
+
+#include "intergrator.h"
 #include "mathf.h"
+
+#include "force.h"
+#include "spring.h"
+#include "collision.h"
+#include "contact.h"
+
 #include "raylib.h"
 #include "raymath.h"
-#include <world.h>
+#include "../../raygui/src/raygui.h"
 
 #include <stdlib.h>
 #include <assert.h>
 
 int main( void ) {
 
-	InitWindow( 1280, 720, "Physics Engine" );
+	ncBody* selectedBody = NULL;
+	ncBody* connectedBody = NULL;
+
+	ncGravity = ( Vector2 ) { 0, -1 };
+
+	InitWindow( (int) ncScreenSize.x, (int) ncScreenSize.y, "Physics Engine" );
+	InitEditor();
 	SetTargetFPS( 60 );
 
 	while ( !WindowShouldClose() ) {
 
 		//Update
+
 		float dt = GetFrameTime();
 		float fps = (float) GetFPS();
 
 		Vector2 position = GetMousePosition();
 
-		if ( IsMouseButtonDown( 0 ) ) {
+		UpdateEditor( position );
 
-			Body* body = CreateBody();
-			body->position = position;
-			body->velocity = CreateVector2( GetRandomFloatValue( -5, 5 ), GetRandomFloatValue( -5, 5 ) );
+		selectedBody = GetBodyIntersect( ncBodies, position );
+		if ( selectedBody ) {
 
+			Vector2 screen = ConvertWorldToScreen( selectedBody->position );
+			DrawCircleLines( screen.x, screen.y, ConvertWorldToPixel( selectedBody->mass * 0.5f ), YELLOW );
 
 		}
+
+		if ( !ncEditorIntersect && IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) ) {
+
+			ncBody* body = CreateBody( ConvertScreenToWorld( position ), GetRandomFloatValue( ncEditorData.MassMin, ncEditorData.MassMax ), ncEditorData.BodyType );
+			assert( body );
+
+			AddBody( body );
+	
+		}
+
+		if ( IsMouseButtonPressed( MOUSE_BUTTON_RIGHT ) && selectedBody ) connectedBody = selectedBody;
+		if ( IsMouseButtonDown( MOUSE_BUTTON_RIGHT ) && connectedBody ) DrawLineBodyToPosition( connectedBody, position );
+		if ( IsMouseButtonReleased( MOUSE_BUTTON_RIGHT ) && connectedBody ) {
+
+			if ( selectedBody && selectedBody != connectedBody ) {
+
+				ncSpring_t* spring = CreateSpring( connectedBody, selectedBody, Vector2Distance( connectedBody->position, selectedBody->position ), 20 );
+				AddSpring( spring );
+
+			}
+
+		}
+
+		//ApplyGravitation( ncBodies, 1 );
+
+		ApplySpringForce();
+
+		for ( ncBody* body = ncBodies; body; body = body->next ) {
+
+			Step( body, dt );
+
+		}
+
+		ncContact_t* contacts = NULL;
+		CreateContacts( ncBodies, &contacts );
 
 		//Render
 		BeginDrawing();
 		ClearBackground( BLACK );
 
-		Body* body = bodies;
-		while ( body ) {
-			
-			body->position = Vector2Add( body->position, body->velocity );
-			DrawCircle( (int) body->position.x, body->position.y, 10, RED );
+		for ( ncSpring_t* spring = ncSprings; spring; spring = spring->next ) {
 
-			body = body->next;
+			Vector2 screen1 = ConvertWorldToScreen( spring->body1->position );
+			Vector2 screen2 = ConvertWorldToScreen( spring->body2->position );
+			DrawLine( (int) screen1.x, (int) screen1.y, (int) screen2.x, (int) screen2.y, YELLOW );
+
+		}
+
+		for ( ncBody* body = ncBodies; body; body = body->next ) {
+
+			Vector2 bodyPos = ConvertWorldToScreen( body->position );
+
+			DrawCircle( (int) bodyPos.x, bodyPos.y, ConvertWorldToPixel( body->mass * 0.5f ), body->color);
+
+		}
+
+		for ( ncContact_t* contact = contacts; contact; contact = contact->next ) {
+
+			Vector2 screen = ConvertWorldToScreen( contact->body1->position );
+			DrawCircleLines( (int) screen.x, (int) screen.y, ConvertWorldToPixel(contact->body1->mass * 0.5f ), RED);
 
 		}
 
 		DrawText( TextFormat( "FPS: %.2f (%.2fms)", fps, 1000 / fps ), 10, 10, 20, LIME );
 		DrawText( TextFormat( "FRAME: %.4f", dt ), 10, 30, 20, LIME );
+		DrawText( TextFormat( "Bodies: %i", ncBodyCount ), 10, 50, 20, LIME );
 
 		DrawCircleLines( (int) position.x, (int) position.y, 10, WHITE );
+
+		DrawEditor( position );
 
 		EndDrawing();
 
 	}
+
+	DestoryAllSprings();
+	DestoryAllBodies();
 
 	CloseWindow();
 
