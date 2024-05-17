@@ -14,7 +14,7 @@ void ApplyForce( ncBody* body, Vector2 force, ncForceMode forceMode ) {
 		break;
 
 	case FM_IMPULSE:
-		body->velocity = Vector2Scale( force, body->inverseMass );
+		body->velocity = Vector2Add( body->velocity, Vector2Scale( force, body->inverseMass ) );
 		break;
 
 	case FM_VELOCITY:
@@ -35,7 +35,7 @@ void Step( ncBody* body, float timestep ) {
 
 	body->force = Vector2Add( body->force, Vector2Scale( Vector2Scale( ncGravity, body->gravityScale ), body->mass ) );
 	body->acceleration = Vector2Scale( body->force, body->inverseMass );
-	
+
 	float damping = 1 / ( 1 + ( body->damping * timestep ) );
 	body->velocity = Vector2Scale( body->velocity, damping );
 

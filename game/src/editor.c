@@ -46,6 +46,45 @@ void UpdateEditor( Vector2 position ) {
 
 }
 
+/*
+
+Body
+
+	Vector2 position;
+	Vector2 velocity;
+	Vector2 acceleration;
+	Vector2 force;
+
+	float mass;
+	float inverseMass;
+	float gravityScale;
+	float damping;
+
+	float restitution;
+
+	Color color;
+
+	struct ncBody* next;
+	struct ncBody* prev;
+
+
+Spring
+
+	struct ncBody* body2;
+	float restLength;
+	float k;
+
+	struct ncSpring* next;
+	struct ncSpring* prev;
+
+World
+
+	Vector2 gravity;
+	float GravitationScale;
+
+
+*/
+
 void DrawEditor( Vector2 position ) {
 
 	if ( ncEditorData.BodyTypeEditMode ) GuiLock();
@@ -58,7 +97,7 @@ void DrawEditor( Vector2 position ) {
 		GuiSlider( ( Rectangle ) { 8 + ncEditorData.anchor.x, 40 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.MassMin, 0.01f, ncEditorData.MassMax );
 
 		GuiLabel( ( Rectangle ) { 136 + ncEditorData.anchor.x, 80 + ncEditorData.anchor.y, 110, 24 }, TextFormat( "Max Mass: %.2f", ncEditorData.MassMax ) );
-		GuiSlider( ( Rectangle ) { 8 + ncEditorData.anchor.x, 80 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.MassMax, ncEditorData.MassMin, 100 );
+		GuiSlider( ( Rectangle ) { 8 + ncEditorData.anchor.x, 80 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.MassMax, ncEditorData.MassMin, 10 );
 
 		GuiLabel( ( Rectangle ) { 136 + ncEditorData.anchor.x, 160 + ncEditorData.anchor.y, 140, 24 }, TextFormat( "Gravity Scale: %.2f", ncEditorData.Gravity ) );
 		GuiSlider( ( Rectangle ) { 8 + ncEditorData.anchor.x, 160 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.Gravity, 0, 100 );

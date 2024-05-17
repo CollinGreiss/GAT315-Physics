@@ -24,7 +24,7 @@ int main( void ) {
 	ncBody* selectedBody = NULL;
 	ncBody* connectedBody = NULL;
 
-	ncGravity = ( Vector2 ) { 0, -1 };
+	ncGravity = ( Vector2 ) { 0, 0 };
 
 	InitWindow( (int) ncScreenSize.x, (int) ncScreenSize.y, "Physics Engine" );
 	InitEditor();
@@ -49,20 +49,22 @@ int main( void ) {
 
 		}
 
-		if ( !ncEditorIntersect && IsMouseButtonPressed( MOUSE_BUTTON_LEFT ) ) {
+		if ( !ncEditorIntersect
+			&& ( IsMouseButtonPressed( MOUSE_BUTTON_LEFT )
+			|| ( IsMouseButtonDown( MOUSE_BUTTON_LEFT ) && IsKeyDown( KEY_LEFT_CONTROL ) ) ) ) {
 
 			ncBody* body = CreateBody( ConvertScreenToWorld( position ), GetRandomFloatValue( ncEditorData.MassMin, ncEditorData.MassMax ), ncEditorData.BodyType );
 			assert( body );
 
 			AddBody( body );
-	
+
 		}
 
 		if ( IsMouseButtonPressed( MOUSE_BUTTON_RIGHT ) && selectedBody ) connectedBody = selectedBody;
 		if ( IsMouseButtonDown( MOUSE_BUTTON_RIGHT ) && connectedBody ) DrawLineBodyToPosition( connectedBody, position );
 		if ( IsMouseButtonReleased( MOUSE_BUTTON_RIGHT ) && connectedBody ) {
 
-			if ( selectedBody && selectedBody != connectedBody ) {
+			if ( selectedBody && selectedBody != connectedBody && ( selectedBody->type != BT_STATIC || connectedBody->type != BT_STATIC ) ) {
 
 				ncSpring_t* spring = CreateSpring( connectedBody, selectedBody, Vector2Distance( connectedBody->position, selectedBody->position ), 20 );
 				AddSpring( spring );
@@ -71,7 +73,7 @@ int main( void ) {
 
 		}
 
-		//ApplyGravitation( ncBodies, 1 );
+		ApplyGravitation( ncBodies, 1 );
 
 		ApplySpringForce();
 
@@ -83,6 +85,8 @@ int main( void ) {
 
 		ncContact_t* contacts = NULL;
 		CreateContacts( ncBodies, &contacts );
+		SeparateContacts( contacts );
+		ResolveContacts( contacts );
 
 		//Render
 		BeginDrawing();
@@ -100,14 +104,14 @@ int main( void ) {
 
 			Vector2 bodyPos = ConvertWorldToScreen( body->position );
 
-			DrawCircle( (int) bodyPos.x, bodyPos.y, ConvertWorldToPixel( body->mass * 0.5f ), body->color);
+			DrawCircle( (int) bodyPos.x, bodyPos.y, ConvertWorldToPixel( body->mass * 0.5f ), body->color );
 
 		}
 
 		for ( ncContact_t* contact = contacts; contact; contact = contact->next ) {
 
 			Vector2 screen = ConvertWorldToScreen( contact->body1->position );
-			DrawCircleLines( (int) screen.x, (int) screen.y, ConvertWorldToPixel(contact->body1->mass * 0.5f ), RED);
+			DrawCircleLines( (int) screen.x, (int) screen.y, ConvertWorldToPixel( contact->body1->mass * 0.5f ), RED );
 
 		}
 
