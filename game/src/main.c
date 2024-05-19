@@ -24,7 +24,7 @@ int main( void ) {
 	ncBody* selectedBody = NULL;
 	ncBody* connectedBody = NULL;
 
-	ncGravity = ( Vector2 ) { 0, 0 };
+	ncGravity = ( Vector2 ) { 0, -1 };
 
 	InitWindow( (int) ncScreenSize.x, (int) ncScreenSize.y, "Physics Engine" );
 	InitEditor();
@@ -73,7 +73,7 @@ int main( void ) {
 
 		}
 
-		ApplyGravitation( ncBodies, 1 );
+		//ApplyGravitation( ncBodies, 1 );
 
 		ApplySpringForce();
 

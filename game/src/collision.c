@@ -82,7 +82,7 @@ void ResolveContacts( ncContact_t* contacts ) {
 
 	for ( ncContact_t* contact = contacts; contact; contact = contact->next ) {
 
-		Vector2 rv = Vector2Subtract( contact->body2->velocity, contact->body1->velocity );
+		Vector2 rv = Vector2Subtract( contact->body1->velocity, contact->body2->velocity );
 		float nv = Vector2DotProduct( rv, contact->normal );
 
 		if ( nv > 0 ) continue;

@@ -24,6 +24,7 @@ ncBody* CreateBody( Vector2 position, float mass, ncBodyType type ) {
 	body->type = type;
 	body->gravityScale = 1;
 	body->color = ( Color ) { GetRandomValue(50, 255), GetRandomValue(50, 255), GetRandomValue(50, 255), 255};
+	body->restitution = 1;
 
 	return body;
 
