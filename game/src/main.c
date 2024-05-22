@@ -19,12 +19,16 @@
 #include <stdlib.h>
 #include <assert.h>
 
+
+
 int main( void ) {
 
 	ncBody* selectedBody = NULL;
 	ncBody* connectedBody = NULL;
+	ncContact_t* contacts = NULL;
 
 	ncGravity = ( Vector2 ) { 0, -1 };
+	float timeAccumulator = 0;
 
 	InitWindow( (int) ncScreenSize.x, (int) ncScreenSize.y, "Physics Engine" );
 	InitEditor();
@@ -36,6 +40,7 @@ int main( void ) {
 
 		float dt = GetFrameTime();
 		float fps = (float) GetFPS();
+		float timestep = 1.0 / ncEditorData.TimeStep;
 
 		Vector2 position = GetMousePosition();
 
@@ -72,21 +77,37 @@ int main( void ) {
 			}
 
 		}
+		
+		timeAccumulator += dt;
+		while ( timeAccumulator >= timestep ) {
 
-		//ApplyGravitation( ncBodies, 1 );
+			timeAccumulator -= timestep;
+			if ( !ncEditorData.Simulating ) continue;
+			if ( ncEditorData.Reset ) {
 
-		ApplySpringForce();
+				DestroyAllContacts( &contacts );
+				DestoryAllSprings();
+				DestoryAllBodies();
+				ncEditorData.Reset = false;
+				continue;
 
-		for ( ncBody* body = ncBodies; body; body = body->next ) {
+			}
 
-			Step( body, dt );
+			ApplyGravitation( ncEditorData.Gravitation );
+			ApplySpringForce( ncSprings );
+
+			for ( ncBody* body = ncBodies; body; body = body->next ) {
+
+				Step( body, dt );
+
+			}
+
+			DestroyAllContacts( &contacts );
+			CreateContacts( ncBodies, &contacts );
+			SeparateContacts( contacts );
+			ResolveContacts( contacts );
 
 		}
-
-		ncContact_t* contacts = NULL;
-		CreateContacts( ncBodies, &contacts );
-		SeparateContacts( contacts );
-		ResolveContacts( contacts );
 
 		//Render
 		BeginDrawing();
@@ -127,6 +148,7 @@ int main( void ) {
 
 	}
 
+	DestroyAllContacts( &contacts );
 	DestoryAllSprings();
 	DestoryAllBodies();
 

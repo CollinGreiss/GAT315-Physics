@@ -1,6 +1,7 @@
 #include "editor.h"
 
 #include "body.h"
+#include "world.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include "../../raygui/src/raygui.h"
@@ -24,93 +25,181 @@ void InitEditor() {
 	UnloadImage( image );
 	HideCursor();
 
+	ncEditorData.TimeStep = 60.0f;
+	ncEditorData.Simulating = true;
+	ncEditorData.Reset = false;
+
 	ncEditorData.anchor = ( Vector2 ) { 10, 80 };
-	ncEditorData.BodyWindowActive = false;
+	ncEditorData.EditorWindowActive = false;
+	ncEditorData.WindowType = 0;
+	ncEditorData.WindowTypeEditMode = false;
+
+	ncEditorData.Gravitation = 0.0f;
+
 	ncEditorData.MassMin = 0.5f;
 	ncEditorData.MassMax = 3.0f;
-	ncEditorData.Gravity = 1.0f;
+	ncEditorData.GravityScale = 1.0f;
 	ncEditorData.BodyTypeEditMode = false;
 	ncEditorData.BodyType = 2;
 	ncEditorData.Damping = 0.0f;
-	ncEditorData.Gravitation = 0.0f;
+	ncEditorData.Restitution = 0.0f;
+	ncEditorData.RandomColor = true;
+	ncEditorData.BodyColor = WHITE;
 
-	editorRect = ( Rectangle ) { ncEditorData.anchor.x + 0, ncEditorData.anchor.y + 0, 280, 280 };
+	ncEditorData.Stiffness = 20.0f;
+
+	editorRect = ( Rectangle ) { ncEditorData.anchor.x + 0, ncEditorData.anchor.y + 0, (int) ncEditorData.WindowSize.x, (int) ncEditorData.WindowSize.y };
 
 }
 
 void UpdateEditor( Vector2 position ) {
 
-	if ( IsKeyPressed( KEY_TAB ) ) ncEditorData.BodyWindowActive = !ncEditorData.BodyWindowActive;
+	if ( IsKeyPressed( KEY_TAB ) ) ncEditorData.EditorWindowActive = !ncEditorData.EditorWindowActive;
 
-	ncEditorIntersect = ncEditorData.BodyWindowActive && CheckCollisionPointRec( position, editorRect );
+	ncEditorIntersect = ncEditorData.EditorWindowActive && CheckCollisionPointRec( position, editorRect );
 
 }
 
-/*
+void DrawWorldWindow() {
 
-Body
+	ncEditorData.WindowSize.x = 320;
+	ncEditorData.WindowSize.y = 240;
 
-	Vector2 position;
-	Vector2 velocity;
-	Vector2 acceleration;
-	Vector2 force;
+	GuiGroupBox( ( Rectangle ) { 20 + ncEditorData.anchor.x, 80 + ncEditorData.anchor.y, ncEditorData.WindowSize.x - 40, ncEditorData.WindowSize.y - 100 }, "World" );
 
-	float mass;
-	float inverseMass;
-	float gravityScale;
-	float damping;
+	GuiLabel( ( Rectangle ) { 156 + ncEditorData.anchor.x, 100 + ncEditorData.anchor.y, 160, 24 }, TextFormat( "Gravitation Scale: %.2f", ncEditorData.Gravitation ) );
+	GuiSlider( ( Rectangle ) { 28 + ncEditorData.anchor.x, 100 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.Gravitation, 0, 100 );
 
-	float restitution;
+	GuiLabel( ( Rectangle ) { 156 + ncEditorData.anchor.x, 140 + ncEditorData.anchor.y, 110, 24 }, TextFormat( "Gravity X: %.2f", ncGravity.x ) );
+	GuiSlider( ( Rectangle ) { 28 + ncEditorData.anchor.x, 140 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncGravity.x, -5, 5 );
 
-	Color color;
+	GuiLabel( ( Rectangle ) { 156 + ncEditorData.anchor.x, 180 + ncEditorData.anchor.y, 110, 24 }, TextFormat( "Gravity Y: %.2f", ncGravity.y ) );
+	GuiSlider( ( Rectangle ) { 28 + ncEditorData.anchor.x, 180 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncGravity.y, -5, 5 );
 
-	struct ncBody* next;
-	struct ncBody* prev;
+}
 
+void DrawSpringWindow() {
 
-Spring
+	ncEditorData.WindowSize.x = 280;
+	ncEditorData.WindowSize.y = 160;
 
-	struct ncBody* body2;
-	float restLength;
-	float k;
+	GuiGroupBox( ( Rectangle ) { 20 + ncEditorData.anchor.x, 80 + ncEditorData.anchor.y, ncEditorData.WindowSize.x - 40, ncEditorData.WindowSize.y - 100 }, "Spring" );
 
-	struct ncSpring* next;
-	struct ncSpring* prev;
+	GuiLabel( ( Rectangle ) { 156 + ncEditorData.anchor.x, 100 + ncEditorData.anchor.y, 160, 24 }, TextFormat( "Stiffness: %.2f", ncEditorData.Stiffness ) );
+	GuiSlider( ( Rectangle ) { 28 + ncEditorData.anchor.x, 100 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.Stiffness, 0, 100 );
 
-World
+}
 
-	Vector2 gravity;
-	float GravitationScale;
+void DrawBodyWindow() {
 
+	ncEditorData.WindowSize.x = 300;
+	ncEditorData.WindowSize.y = 400;
+	if ( !ncEditorData.RandomColor ) ncEditorData.WindowSize.y += 80;
 
-*/
+	GuiGroupBox( ( Rectangle ) { 20 + ncEditorData.anchor.x, 80 + ncEditorData.anchor.y, ncEditorData.WindowSize.x - 40, ncEditorData.WindowSize.y - 100 }, "Body" );
+
+	GuiLabel( ( Rectangle ) { 156 + ncEditorData.anchor.x, 100 + ncEditorData.anchor.y, 100, 24 }, TextFormat( "Min Mass: %.2f", ncEditorData.MassMin ) );
+	GuiSlider( ( Rectangle ) { 28 + ncEditorData.anchor.x, 100 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.MassMin, 0.01f, ncEditorData.MassMax );
+
+	GuiLabel( ( Rectangle ) { 156 + ncEditorData.anchor.x, 140 + ncEditorData.anchor.y, 110, 24 }, TextFormat( "Max Mass: %.2f", ncEditorData.MassMax ) );
+	GuiSlider( ( Rectangle ) { 28 + ncEditorData.anchor.x, 140 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.MassMax, ncEditorData.MassMin, 10 );
+
+	GuiLabel( ( Rectangle ) { 156 + ncEditorData.anchor.x, 220 + ncEditorData.anchor.y, 140, 24 }, TextFormat( "Gravity Scale: %.2f", ncEditorData.GravityScale ) );
+	GuiSlider( ( Rectangle ) { 28 + ncEditorData.anchor.x, 220 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.GravityScale, 0, 100 );
+
+	GuiLabel( ( Rectangle ) { 156 + ncEditorData.anchor.x, 260 + ncEditorData.anchor.y, 140, 24 }, TextFormat( "Damping: %.2f", ncEditorData.Damping ) );
+	GuiSlider( ( Rectangle ) { 28 + ncEditorData.anchor.x, 260 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.Damping, 0, 100 );
+
+	GuiLabel( ( Rectangle ) { 156 + ncEditorData.anchor.x, 300 + ncEditorData.anchor.y, 140, 24 }, TextFormat( "Restitution: %.2f", ncEditorData.Restitution ) );
+	GuiSlider( ( Rectangle ) { 28 + ncEditorData.anchor.x, 300 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.Restitution, 0, 1 );
+
+	if ( !ncEditorData.RandomColor ) {
+
+		GuiLabel( ( Rectangle ) { 28 + ncEditorData.anchor.x, 330 + ncEditorData.anchor.y, 140, 24 }, "Body Color" );
+		GuiColorPicker( ( Rectangle ) { 28 + ncEditorData.anchor.x, 350 + ncEditorData.anchor.y, 96, 96 }, NULL, & ncEditorData.BodyColor );
+
+		GuiLabel( ( Rectangle ) { 176 + ncEditorData.anchor.x, 360 + ncEditorData.anchor.y, 140, 24 }, "Random Color" );
+		GuiCheckBox( ( Rectangle ) { 200 + ncEditorData.anchor.x, 390 + ncEditorData.anchor.y, 24, 24 }, NULL, & ncEditorData.RandomColor );
+
+	} else {
+
+		GuiLabel( ( Rectangle ) { 60 + ncEditorData.anchor.x, 340 + ncEditorData.anchor.y, 140, 24 }, "Random Color" );
+		GuiCheckBox( ( Rectangle ) { 28 + ncEditorData.anchor.x, 340 + ncEditorData.anchor.y, 24, 24 }, NULL, & ncEditorData.RandomColor );
+	}
+
+	GuiLabel( ( Rectangle ) { 156 + ncEditorData.anchor.x, 180 + ncEditorData.anchor.y, 120, 24 }, "Body Type" );
+	if ( GuiDropdownBox( ( Rectangle ) { 28 + ncEditorData.anchor.x, 180 + ncEditorData.anchor.y, 120, 24 }, "Static;Kinematic;Dynamic", & ncEditorData.BodyType, ncEditorData.BodyTypeEditMode ) )
+		ncEditorData.BodyTypeEditMode = !ncEditorData.BodyTypeEditMode;
+
+}
 
 void DrawEditor( Vector2 position ) {
 
+	editorRect = ( Rectangle ) { ncEditorData.anchor.x + 0, ncEditorData.anchor.y + 0, (int) ncEditorData.WindowSize.x, (int) ncEditorData.WindowSize.y };
+
 	if ( ncEditorData.BodyTypeEditMode ) GuiLock();
 
-	if ( ncEditorData.BodyWindowActive ) {
+	if ( ncEditorData.EditorWindowActive ) {
 
-		ncEditorData.BodyWindowActive = !GuiWindowBox( ( Rectangle ) { ncEditorData.anchor.x, ncEditorData.anchor.y, 280, 280 }, "Body" );
+		ncEditorData.EditorWindowActive = !GuiWindowBox( ( Rectangle ) { ncEditorData.anchor.x, ncEditorData.anchor.y, (int) ncEditorData.WindowSize.x, (int) ncEditorData.WindowSize.y }, "Editor" );
 
-		GuiLabel( ( Rectangle ) { 136 + ncEditorData.anchor.x, 40 + ncEditorData.anchor.y, 100, 24 }, TextFormat( "Min Mass: %.2f", ncEditorData.MassMin ) );
-		GuiSlider( ( Rectangle ) { 8 + ncEditorData.anchor.x, 40 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.MassMin, 0.01f, ncEditorData.MassMax );
+		switch ( ncEditorData.WindowType ) {
 
-		GuiLabel( ( Rectangle ) { 136 + ncEditorData.anchor.x, 80 + ncEditorData.anchor.y, 110, 24 }, TextFormat( "Max Mass: %.2f", ncEditorData.MassMax ) );
-		GuiSlider( ( Rectangle ) { 8 + ncEditorData.anchor.x, 80 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.MassMax, ncEditorData.MassMin, 10 );
+		case 0:
+			DrawWorldWindow();
+			break;
 
-		GuiLabel( ( Rectangle ) { 136 + ncEditorData.anchor.x, 160 + ncEditorData.anchor.y, 140, 24 }, TextFormat( "Gravity Scale: %.2f", ncEditorData.Gravity ) );
-		GuiSlider( ( Rectangle ) { 8 + ncEditorData.anchor.x, 160 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.Gravity, 0, 100 );
+		case 1:
+			DrawBodyWindow();
+			break;
 
-		GuiLabel( ( Rectangle ) { 136 + ncEditorData.anchor.x, 200 + ncEditorData.anchor.y, 140, 24 }, TextFormat( "Damping: %.2f", ncEditorData.Damping ) );
-		GuiSlider( ( Rectangle ) { 8 + ncEditorData.anchor.x, 200 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.Damping, 0, 100 );
+		case 2:
+			DrawSpringWindow();
+			break;
 
-		GuiLabel( ( Rectangle ) { 136 + ncEditorData.anchor.x, 240 + ncEditorData.anchor.y, 160, 24 }, TextFormat( "Gravitation Scale: %.2f", ncEditorData.Gravitation ) );
-		GuiSlider( ( Rectangle ) { 8 + ncEditorData.anchor.x, 240 + ncEditorData.anchor.y, 120, 24 }, NULL, NULL, & ncEditorData.Gravitation, 0, 100 );
+		}
 
-		GuiLabel( ( Rectangle ) { 136 + ncEditorData.anchor.x, 120 + ncEditorData.anchor.y, 120, 24 }, "Body Type" );
-		if ( GuiDropdownBox( ( Rectangle ) { 8 + ncEditorData.anchor.x, 120 + ncEditorData.anchor.y, 120, 24 }, "Static;Kinematic;Dynamic", & ncEditorData.BodyType, ncEditorData.BodyTypeEditMode ) )
-			ncEditorData.BodyTypeEditMode = !ncEditorData.BodyTypeEditMode;
+		GuiToggle( ( Rectangle ) {
+
+			30 + ncEditorData.anchor.x,
+				ncEditorData.anchor.y + ncEditorData.WindowSize.y,
+				ncEditorData.WindowSize.x * 0.5 - 40,
+				30
+
+		}, "Simulate", & ncEditorData.Simulating );
+
+		ncEditorData.Reset = GuiButton( ( Rectangle ) {
+
+			10 + ncEditorData.anchor.x + ncEditorData.WindowSize.x * 0.5,
+				ncEditorData.anchor.y + ncEditorData.WindowSize.y,
+				ncEditorData.WindowSize.x * 0.5 - 40,
+				30
+
+		}, "Reset" );
+
+		GuiLabel( ( Rectangle ) { 
+			
+			10 + ncEditorData.anchor.x + ncEditorData.WindowSize.x * 0.5,
+				40 + ncEditorData.anchor.y + ncEditorData.WindowSize.y,
+				ncEditorData.WindowSize.x * 0.5 - 40,
+				20
+		
+		}, TextFormat( "Timestep: %.2f", ncEditorData.TimeStep ) );
+
+		GuiSlider( ( Rectangle ) { 
+			
+			30 + ncEditorData.anchor.x,
+				40 + ncEditorData.anchor.y + ncEditorData.WindowSize.y,
+				ncEditorData.WindowSize.x * 0.5 - 40,
+				20
+		
+		}, NULL, NULL, & ncEditorData.TimeStep, 0, 165 );
+
+		ncEditorData.WindowSize.y += 80;
+
+		GuiLabel( ( Rectangle ) { 156 + ncEditorData.anchor.x, 40 + ncEditorData.anchor.y, 120, 24 }, "Window" );
+		if ( GuiDropdownBox( ( Rectangle ) { 28 + ncEditorData.anchor.x, 40 + ncEditorData.anchor.y, 120, 24 }, "World;Body;Spring", & ncEditorData.WindowType, ncEditorData.WindowTypeEditMode ) )
+			ncEditorData.WindowTypeEditMode = !ncEditorData.WindowTypeEditMode;
 
 	}
 
@@ -128,7 +217,7 @@ ncBody* GetBodyIntersect( ncBody* bodies, Vector2 position ) {
 		if ( CheckCollisionPointCircle( position, screen, ConvertWorldToPixel( body->mass * 0.5f ) ) ) {
 
 			return body;
-		
+
 		}
 
 	}

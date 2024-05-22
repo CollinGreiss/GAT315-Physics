@@ -2,4 +2,4 @@
 
 typedef struct ncBody ncBody;
 
-void ApplyGravitation( ncBody* bodies, float strength );
+void ApplyGravitation( float strength );

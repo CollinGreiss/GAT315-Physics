@@ -3,16 +3,37 @@
 
 typedef struct ncEditorData {
 
-    bool BodyWindowActive;
-    float MassMin;
-    float MassMax;
-    float Gravity;
-    bool BodyTypeEditMode;
-    int BodyType;
-    float Damping;
+    bool EditorWindowActive;
+    
+    int WindowType;
+    int WindowTypeEditMode;
+   
+    Vector2 WindowSize;
+    Vector2 anchor;
+
+	float TimeStep;
+    bool Simulating;
+    bool Reset;
+
+    //World
     float Gravitation;
 
-	Vector2 anchor;
+    //Body
+    float MassMin;
+    float MassMax;
+    float GravityScale;
+    
+    bool BodyTypeEditMode;
+    int BodyType;
+    
+    float Damping;
+    float Restitution;
+    
+    bool RandomColor;
+    Color BodyColor;
+
+    //Spring
+    float Stiffness;
 
 } ncEditorData_t;
 
